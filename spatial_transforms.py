@@ -213,3 +213,19 @@ class PickFirstChannels(object):
 
     def randomize_parameters(self):
         pass
+
+
+class RandomShuffleChannels(object):
+
+    def __init__(self, p):
+        self.p = p
+
+    def __call__(self, img):
+        """
+        img: PIL Image
+        """
+        if random.random() < self.p:
+            chls = list(img.split())
+            random.shuffle(chls)
+            return Image.merge("RGB", chls)
+        return img
