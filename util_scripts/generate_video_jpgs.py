@@ -1,3 +1,4 @@
+import os
 import subprocess
 import argparse
 from pathlib import Path
@@ -90,6 +91,10 @@ if __name__ == '__main__':
         '--size', default=240, type=int, help='Frame size of output videos.')
     args = parser.parse_args()
 
+    if args.dst_path.exists():
+        os.system("rm -rf %s" % args.dst_path)
+    args.dst_path.mkdir(exist_ok=True)
+
     if args.dataset in ['kinetics', 'mit', 'activitynet']:
         ext = '.mp4'
     else:
@@ -107,6 +112,10 @@ if __name__ == '__main__':
         test_set_video_path = args.dir_path / 'test'
         if test_set_video_path.exists():
             class_dir_paths.append(test_set_video_path)
+
+        # print(class_dir_paths)
+        # print(args.dst_path)
+        # exit()
 
         status_list = Parallel(
             n_jobs=args.n_jobs,
