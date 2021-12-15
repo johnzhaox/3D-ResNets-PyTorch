@@ -25,7 +25,7 @@ if __name__ == "__main__":
 
     if args.dst_path.exists():
         os.system("rm -rf %s" % args.dst_path)
-        args.dst_path.mkdir()
+    args.dst_path.mkdir()
 
     class_dir_paths = [_ for _ in args.dir_path.iterdir() if _.is_dir()]
     class_labels = [_.name for _ in class_dir_paths]

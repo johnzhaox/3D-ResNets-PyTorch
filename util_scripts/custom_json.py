@@ -1,3 +1,4 @@
+import os
 import argparse
 import json
 from pathlib import Path
@@ -83,6 +84,10 @@ if __name__ == '__main__':
                         help='Directory path of dst json file.')
 
     args = parser.parse_args()
+
+    if args.dst_dir_path.exists():
+        os.system("rm -rf %s" % args.dst_dir_path)
+    args.dst_dir_path.mkdir()
 
     dst_json_path = args.dst_dir_path / 'custom.json'
     convert_custom_csv_to_json(args.dir_path, args.video_path, dst_json_path)
