@@ -217,7 +217,7 @@ class PickFirstChannels(object):
 
 class RandomShuffleChannels(object):
 
-    def __init__(self, p):
+    def __init__(self, p=0.5):
         self.p = p
 
     def __call__(self, img):
