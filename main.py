@@ -49,6 +49,9 @@ def get_opt():
         if opt.pretrain_path is not None:
             opt.pretrain_path = opt.root_path / opt.pretrain_path
 
+    if not opt.result_path.exists():
+        opt.result_path.mkdir()
+
     if opt.pretrain_path is not None:
         opt.n_finetune_classes = opt.n_classes
         opt.n_classes = opt.n_pretrain_classes
