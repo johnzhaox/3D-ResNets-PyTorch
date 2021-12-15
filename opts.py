@@ -83,6 +83,26 @@ def parse_opts():
     parser.add_argument('--colorjitter',
                         action='store_true',
                         help='If true colorjitter is performed.')
+    parser.add_argument('--colorjitter_brightness',
+                        default=0.5,
+                        type=float,
+                        help='Colorjitter brightness.')
+    parser.add_argument('--colorjitter_contrast',
+                        default=0.5,
+                        type=float,
+                        help='Colorjitter contrast.')
+    parser.add_argument('--colorjitter_saturation',
+                        default=0.5,
+                        type=float,
+                        help='Colorjitter saturation.')
+    parser.add_argument('--colorjitter_hue',
+                        default=0.5,
+                        type=float,
+                        help='Colorjitter hue.')
+    parser.add_argument('--colorjitter_p',
+                        default=0.5,
+                        type=float,
+                        help='Colorjitter p.')
     parser.add_argument('--train_t_crop',
                         default='random',
                         type=str,

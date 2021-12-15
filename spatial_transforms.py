@@ -1,5 +1,5 @@
 import random
-
+import torch.functional as F
 from torchvision.transforms import transforms
 from torchvision.transforms import functional as F
 from PIL import Image
@@ -187,20 +187,31 @@ class RandomResizedCrop(transforms.RandomResizedCrop):
 
 class ColorJitter(transforms.ColorJitter):
 
-    def __init__(self, brightness=0, contrast=0, saturation=0, hue=0):
+    def __init__(self, brightness=0, contrast=0, saturation=0, hue=0, p=0.5):
         super().__init__(brightness, contrast, saturation, hue)
+        self.p = p
         self.randomize_parameters()
 
     def __call__(self, img):
-        if self.randomize:
-            self.transform = self.get_params(self.brightness, self.contrast,
-                                             self.saturation, self.hue)
-            self.randomize = False
+        if self.random_p < self.p:
+            for fn_id in self.fn_idx:
+                if fn_id == 0 and self.brightness_factor is not None:
+                    img = F.adjust_brightness(img, self.brightness_factor)
+                elif fn_id == 1 and self.contrast_factor is not None:
+                    img = F.adjust_contrast(img, self.contrast_factor)
+                elif fn_id == 2 and self.saturation_factor is not None:
+                    img = F.adjust_saturation(img, self.saturation_factor)
+                elif fn_id == 3 and self.hue_factor is not None:
+                    img = F.adjust_hue(img, self.hue_factor)
 
-        return self.transform(img)
+        return img
 
     def randomize_parameters(self):
-        self.randomize = True
+        self.random_p = random.random()
+        self.fn_idx, self.brightness_factor, self.contrast_factor, \
+            self.saturation_factor, self.hue_factor = \
+            self.get_params(self.brightness, self.contrast, self.saturation,
+                            self.hue)
 
 
 class PickFirstChannels(object):

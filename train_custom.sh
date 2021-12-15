@@ -34,7 +34,13 @@ python main.py \
 --n_threads 2 \
 --checkpoint 50 \
 --tensorboard \
---train_ts_channel_shuffle
+--train_ts_channel_shuffle \
+--colorjitter \
+--colorjitter_brightness 0.2 \
+--colorjitter_contrast 0.2 \
+--colorjitter_saturation 0.2 \
+--colorjitter_hue 0.2 \
+--colorjitter_p 0.5
 
 
 # --no_mean_norm

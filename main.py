@@ -147,7 +147,12 @@ def get_train_utils(opt, model_parameters):
     if not opt.no_hflip:
         spatial_transform.append(RandomHorizontalFlip())
     if opt.colorjitter:
-        spatial_transform.append(ColorJitter())
+        spatial_transform.append(
+            ColorJitter(brightness=opt.colorjitter_brightness,
+                        contrast=opt.colorjitter_contrast,
+                        saturation=opt.colorjitter_saturation,
+                        hue=opt.colorjitter_hue,
+                        p=opt.colorjitter_p))
     if opt.train_ts_channel_shuffle:
         spatial_transform.append(RandomShuffleChannels())
     spatial_transform.append(ToTensor())
