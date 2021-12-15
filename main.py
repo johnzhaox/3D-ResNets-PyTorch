@@ -369,9 +369,9 @@ def main_worker(index, opt):
     if opt.tensorboard and opt.is_master_node:
         from torch.utils.tensorboard import SummaryWriter
         if opt.begin_epoch == 1:
-            tb_writer = SummaryWriter(log_dir=opt.result_path)
+            tb_writer = SummaryWriter(log_dir=opt.tensorboard_log_dir)
         else:
-            tb_writer = SummaryWriter(log_dir=opt.result_path,
+            tb_writer = SummaryWriter(log_dir=opt.tensorboard_log_dir,
                                       purge_step=opt.begin_epoch)
     else:
         tb_writer = None

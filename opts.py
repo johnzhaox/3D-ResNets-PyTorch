@@ -20,11 +20,15 @@ def parse_opts():
                         default=None,
                         type=Path,
                         help='Result directory path')
+    parser.add_argument('--tensorboard_log_dir',
+                        default=None,
+                        type=Path,
+                        help='Log dir for tensorboard results')
     parser.add_argument(
         '--dataset',
         default='kinetics',
         type=str,
-        help='Used dataset (activitynet | kinetics | ucf101 | hmdb51)')
+        help='Used dataset (activitynet | kinetics | ucf101 | hmdb51 | custom)')
     parser.add_argument(
         '--n_classes',
         default=400,
