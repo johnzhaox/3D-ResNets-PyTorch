@@ -65,6 +65,17 @@ def class_process(class_dir_path, dst_root_path, ext, fps=-1, size=240):
         video_process(video_file_path, dst_class_path, ext, fps, size)
 
 
+def class_process_custom(class_dir_path, dst_root_path, ext, fps=-1, size=240):
+    if not class_dir_path.is_dir():
+        return
+
+    dst_class_path = dst_root_path / class_dir_path.name
+    dst_class_path.mkdir(exist_ok=True)
+
+    for video_file_path in class_dir_path.glob("*/*.avi"):
+        video_process(video_file_path, dst_class_path, ext, fps, size)
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -78,7 +89,7 @@ if __name__ == '__main__':
         'dataset',
         default='',
         type=str,
-        help='Dataset name (kinetics | mit | ucf101 | hmdb51 | activitynet)')
+        help='Dataset name (kinetics | mit | ucf101 | hmdb51 | activitynet | custom)')
     parser.add_argument(
         '--n_jobs', default=-1, type=int, help='Number of parallel jobs')
     parser.add_argument(
@@ -107,15 +118,27 @@ if __name__ == '__main__':
             backend='threading')(delayed(video_process)(
                 video_file_path, args.dst_path, ext, args.fps, args.size)
                                  for video_file_path in video_file_paths)
+
+    elif args.dataset == "custom":
+        tasks = []
+        for class_dir_path in args.dir_path.iterdir():
+            dst_class_path = args.dst_path / class_dir_path.name
+            if not dst_class_path.exists():
+                dst_class_path.mkdir()
+            tasks += [(dst_class_path, vid_path)
+                      for vid_path in class_dir_path.glob("*/*.avi")]
+
+        status_list = Parallel(
+            n_jobs=args.n_jobs,
+            backend='multiprocessing')(delayed(video_process)(
+                vid_path, dst_class_path, ext, args.fps, args.size)
+            for dst_class_path, vid_path in tasks)
+
     else:
         class_dir_paths = [x for x in sorted(args.dir_path.iterdir())]
         test_set_video_path = args.dir_path / 'test'
         if test_set_video_path.exists():
             class_dir_paths.append(test_set_video_path)
-
-        # print(class_dir_paths)
-        # print(args.dst_path)
-        # exit()
 
         status_list = Parallel(
             n_jobs=args.n_jobs,

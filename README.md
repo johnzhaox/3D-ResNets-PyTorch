@@ -175,6 +175,42 @@ python -m util_scripts.generate_video_jpgs avi_video_dir_path jpg_video_dir_path
 python -m util_scripts.hmdb51_json annotation_dir_path jpg_video_dir_path dst_json_path
 ```
 
+### CUSTOM
+Custom video data directories as following:  
+
+```misc
+video_root/
+    |-category0
+        |-data_id0
+            |-data0
+            |-data1
+            ...
+        |-data_id1
+            ...
+    |-category1
+        ...
+    ...
+````
+
+* Generate split txt files (category0_split.txt, category1_split.txt, ...)
+
+```bash
+python -m util_scripts.generate_video_splilt_custom avi_video_dir_path split_file_dir_path test_rate
+```
+
+* Convert from avi to jpg files using ```util_scripts/generate_video_jpgs.py```
+
+```bash
+python -m util_scripts.generate_video_jpgs avi_video_dir_path jpg_video_dir_path custom
+```
+
+* Generate annotation file in json format similar to ActivityNet using ```util_scripts/custom_json.py```
+  * ```annotation_dir_path``` includes brush_hair_test_split1.txt, ...
+
+```bash
+python -m util_scripts.custom_json annotation_dir_path jpg_video_dir_path dst_json_path
+```
+
 ## Running the code
 
 Assume the structure of data directories is the following:
