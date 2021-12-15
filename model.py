@@ -1,6 +1,6 @@
 import torch
 from torch import nn
-
+from collections import OrderedDict
 from models import resnet, resnet2p1d, pre_act_resnet, wide_resnet, resnext, densenet
 
 
@@ -98,8 +98,12 @@ def load_pretrained_model(model, pretrain_path, model_name, n_finetune_classes):
     if pretrain_path:
         print('loading pretrained model {}'.format(pretrain_path))
         pretrain = torch.load(pretrain_path, map_location='cpu')
+        state_dict = OrderedDict()
+        for k, v in pretrain["state_dict"].items():
+            state_dict[k[7:]] = v
 
-        model.load_state_dict(pretrain['state_dict'])
+        # model.load_state_dict(pretrain['state_dict'])
+        model.load_state_dict(state_dict, False)
         tmp_model = model
         if model_name == 'densenet':
             tmp_model.classifier = nn.Linear(tmp_model.classifier.in_features,
