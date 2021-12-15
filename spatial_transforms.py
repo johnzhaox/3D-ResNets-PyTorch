@@ -224,8 +224,11 @@ class RandomShuffleChannels(object):
         """
         img: PIL Image
         """
-        if random.random() < self.p:
+        if self.random_p < self.p:
             chls = list(img.split())
             random.shuffle(chls)
             return Image.merge("RGB", chls)
         return img
+
+    def randomize_parameters(self):
+        self.random_p = random.random()
