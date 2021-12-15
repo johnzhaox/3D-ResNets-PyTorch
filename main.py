@@ -206,7 +206,8 @@ def get_train_utils(opt, model_parameters):
             optimizer, 'min', patience=opt.plateau_patience)
     else:
         scheduler = lr_scheduler.MultiStepLR(optimizer,
-                                             opt.multistep_milestones)
+                                             opt.multistep_milestones,
+                                             gamma=opt.gamma_milestones)
 
     return (train_loader, train_sampler, train_logger, train_batch_logger,
             optimizer, scheduler)

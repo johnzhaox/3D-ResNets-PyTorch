@@ -20,10 +20,6 @@ def parse_opts():
                         default=None,
                         type=Path,
                         help='Result directory path')
-    parser.add_argument('--tensorboard_log_dir',
-                        default=None,
-                        type=Path,
-                        help='Log dir for tensorboard results')
     parser.add_argument(
         '--dataset',
         default='kinetics',
@@ -147,6 +143,10 @@ def parse_opts():
         action='store_true',
         help='If true, overwriting multistep_milestones when resuming training.'
     )
+    parser.add_argument('--gamma_milestones',
+                        default=0.1,
+                        type=float,
+                        help='gamma of multistep')
     parser.add_argument(
         '--plateau_patience',
         default=10,
@@ -278,6 +278,10 @@ def parse_opts():
     parser.add_argument('--tensorboard',
                         action='store_true',
                         help='If true, output tensorboard log file.')
+    parser.add_argument('--tensorboard_log_dir',
+                        default=None,
+                        type=Path,
+                        help='Log dir for tensorboard results')
     parser.add_argument(
         '--distributed',
         action='store_true',
