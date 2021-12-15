@@ -20,7 +20,7 @@ from spatial_transforms import (Compose, Normalize, Resize, CenterCrop,
                                 CornerCrop, MultiScaleCornerCrop,
                                 RandomResizedCrop, RandomHorizontalFlip,
                                 ToTensor, ScaleValue, ColorJitter,
-                                PickFirstChannels)
+                                PickFirstChannels, RandomShuffleChannels)
 from temporal_transforms import (LoopPadding, TemporalRandomCrop,
                                  TemporalCenterCrop, TemporalEvenCrop,
                                  SlidingWindow, TemporalSubsampling)
@@ -145,6 +145,8 @@ def get_train_utils(opt, model_parameters):
         spatial_transform.append(RandomHorizontalFlip())
     if opt.colorjitter:
         spatial_transform.append(ColorJitter())
+    if opt.train_ts_channel_shuffle:
+        spatial_transform.append(RandomShuffleChannels())
     spatial_transform.append(ToTensor())
     if opt.input_type == 'flow':
         spatial_transform.append(PickFirstChannels(n=2))

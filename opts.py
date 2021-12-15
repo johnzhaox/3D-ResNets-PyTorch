@@ -295,6 +295,9 @@ def parse_opts():
                         default=-1,
                         type=int,
                         help='number of nodes for distributed training')
+    parser.add_argument('--train_ts_channel_shuffle',
+                        action="store_true",
+                        help='If true, channel random shuffle if performed.')
 
     args = parser.parse_args()
 
