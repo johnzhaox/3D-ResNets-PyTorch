@@ -20,6 +20,7 @@ def get_fine_tuning_parameters(model, ft_begin_module):
     if not ft_begin_module:
         return model.parameters()
 
+    model.requires_grad_(False)
     parameters = []
     add_flag = False
     for k, v in model.named_parameters():
@@ -27,6 +28,7 @@ def get_fine_tuning_parameters(model, ft_begin_module):
             add_flag = True
 
         if add_flag:
+            v.requires_grad_(True)
             parameters.append({'params': v})
 
     return parameters

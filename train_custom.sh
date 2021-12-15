@@ -9,7 +9,7 @@ python main.py \
 --model_depth 50 \
 --n_pretrain_classes 400 \
 --pretrain_path models/resnet-50-kinetics.pth \
---ft_begin_module "" \
+--ft_begin_module layer4 \
 --sample_size 160 \
 --sample_duration 50 \
 --sample_t_stride 3 \
