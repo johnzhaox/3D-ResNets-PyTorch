@@ -70,7 +70,7 @@ If you use this code or pre-trained models, please cite the following:
 
 ## Pre-trained models
 
-Pre-trained models are available [here](https://drive.google.com/open?id=1xbYbZ7rpyjftI_KCk6YuL-XrfQDz7Yd4).  
+Pre-trained models are available on [Google drive](https://drive.google.com/open?id=1xbYbZ7rpyjftI_KCk6YuL-XrfQDz7Yd4) or [BaiduNetdisk(fetch code: 5t76)](https://pan.baidu.com/s/1ds7FIAuAyde7oiAtrljz7w).  
 All models are trained on Kinetics-700 (_K_), Moments in Time (_M_), STAIR-Actions (_S_), or merged datasets of them (_KM_, _KS_, _MS_, _KMS_).  
 If you want to finetune the models on your dataset, you should specify the following options.
 
