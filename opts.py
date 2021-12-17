@@ -298,6 +298,9 @@ def parse_opts():
     parser.add_argument('--tensorboard',
                         action='store_true',
                         help='If true, output tensorboard log file.')
+    parser.add_argument('--use_mlflow',
+                        action='store_true',
+                        help='If true, output mlflow log file.')
     parser.add_argument('--tensorboard_log_dir',
                         default=None,
                         type=Path,

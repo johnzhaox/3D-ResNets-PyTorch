@@ -2,7 +2,7 @@ import torch
 import time
 import os
 import sys
-
+import mlflow
 import torch
 import torch.distributed as dist
 
@@ -19,7 +19,8 @@ def train_epoch(epoch,
                 epoch_logger,
                 batch_logger,
                 tb_writer=None,
-                distributed=False):
+                distributed=False,
+                use_mlflow=False):
     print('train at epoch {}'.format(epoch))
 
     model.train()
@@ -104,3 +105,10 @@ def train_epoch(epoch,
         tb_writer.add_scalar('train/loss', losses.avg, epoch)
         tb_writer.add_scalar('train/acc', accuracies.avg, epoch)
         tb_writer.add_scalar('train/lr', current_lr, epoch)
+
+    if use_mlflow:
+        mlflow.log_metrics({
+            'loss': losses.avg,
+            'acc': accuracies.avg,
+            'lr': current_lr
+        }, step=epoch)

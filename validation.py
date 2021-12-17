@@ -1,7 +1,7 @@
 import torch
 import time
 import sys
-
+import mlflow
 import torch
 import torch.distributed as dist
 
@@ -15,7 +15,8 @@ def val_epoch(epoch,
               device,
               logger,
               tb_writer=None,
-              distributed=False):
+              distributed=False,
+              use_mlflow=False):
     print('validation at epoch {}'.format(epoch))
 
     model.eval()
@@ -83,5 +84,9 @@ def val_epoch(epoch,
     if tb_writer is not None:
         tb_writer.add_scalar('val/loss', losses.avg, epoch)
         tb_writer.add_scalar('val/acc', accuracies.avg, epoch)
+
+    if use_mlflow:
+        mlflow.log_metrics({"val/loss": losses.avg, "val/acc": accuracies.avg},
+                           step=epoch)
 
     return losses.avg

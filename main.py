@@ -30,6 +30,7 @@ from utils import Logger, worker_init_fn, get_lr
 from training import train_epoch
 from validation import val_epoch
 import inference
+import mlflow
 
 
 def json_serial(obj):
@@ -395,7 +396,8 @@ def main_worker(index, opt):
             current_lr = get_lr(optimizer)
             train_epoch(i, train_loader, model, criterion, optimizer,
                         opt.device, current_lr, train_logger,
-                        train_batch_logger, tb_writer, opt.distributed)
+                        train_batch_logger, tb_writer, opt.distributed,
+                        opt.use_mlflow)
 
             if i % opt.checkpoint == 0 and opt.is_master_node:
                 save_file_path = opt.result_path / 'save_{}.pth'.format(i)
@@ -405,7 +407,7 @@ def main_worker(index, opt):
         if not opt.no_val:
             prev_val_loss = val_epoch(i, val_loader, model, criterion,
                                       opt.device, val_logger, tb_writer,
-                                      opt.distributed)
+                                      opt.distributed, opt.use_mlflow)
 
         if not opt.no_train and opt.lr_scheduler == 'multistep':
             scheduler.step()
@@ -424,6 +426,9 @@ def main_worker(index, opt):
 
 if __name__ == '__main__':
     opt = get_opt()
+
+    if opt.use_mlflow:
+        mlflow.log_params(opt.__dict__)
 
     opt.device = torch.device('cpu' if opt.no_cuda else 'cuda')
     if not opt.no_cuda:
