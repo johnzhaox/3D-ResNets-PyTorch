@@ -2,3 +2,5 @@ mlflow
 pandas
 h5py
 joblib
+scikit-learn
+tensorflow
