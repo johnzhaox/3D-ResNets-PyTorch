@@ -5,6 +5,7 @@ import os
 
 import numpy as np
 import torch
+import torch.utils.data
 from torch.nn import CrossEntropyLoss
 from torch.optim import SGD, lr_scheduler
 import torch.multiprocessing as mp
@@ -187,7 +188,8 @@ def get_train_utils(opt, model_parameters):
                                                num_workers=opt.n_threads,
                                                pin_memory=True,
                                                sampler=train_sampler,
-                                               worker_init_fn=worker_init_fn)
+                                               worker_init_fn=worker_init_fn,
+                                               drop_last=True)
 
     if opt.is_master_node:
         train_logger = Logger(opt.result_path / 'train.log',
@@ -257,12 +259,13 @@ def get_val_utils(opt):
     val_loader = torch.utils.data.DataLoader(val_data,
                                              batch_size=(opt.batch_size //
                                                          opt.n_val_samples),
-                                             shuffle=False,
+                                             shuffle=True,
                                              num_workers=opt.n_threads,
                                              pin_memory=True,
                                              sampler=val_sampler,
                                              worker_init_fn=worker_init_fn,
-                                             collate_fn=collate_fn)
+                                             collate_fn=collate_fn,
+                                             drop_last=False)
 
     if opt.is_master_node:
         val_logger = Logger(opt.result_path / 'val.log',
@@ -397,7 +400,7 @@ def main_worker(index, opt):
             train_epoch(i, train_loader, model, criterion, optimizer,
                         opt.device, current_lr, train_logger,
                         train_batch_logger, tb_writer, opt.distributed,
-                        opt.mlflow)
+                        opt.mlflow, opt.precision_recall_fscore)
 
             if i % opt.checkpoint == 0 and opt.is_master_node:
                 save_file_path = opt.result_path / 'save_{}.pth'.format(i)
@@ -407,7 +410,8 @@ def main_worker(index, opt):
         if not opt.no_val:
             prev_val_loss = val_epoch(i, val_loader, model, criterion,
                                       opt.device, val_logger, tb_writer,
-                                      opt.distributed, opt.mlflow)
+                                      opt.distributed, opt.mlflow,
+                                      opt.precision_recall_fscore)
 
         if not opt.no_train and opt.lr_scheduler == 'multistep':
             scheduler.step()

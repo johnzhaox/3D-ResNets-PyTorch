@@ -1,4 +1,3 @@
-import torch
 import time
 import os
 import sys
@@ -6,7 +5,8 @@ import mlflow
 import torch
 import torch.distributed as dist
 
-from utils import AverageMeter, calculate_accuracy
+from utils import AverageMeter, calculate_accuracy, \
+    calculate_precision_recall_fscore
 
 
 def train_epoch(epoch,
@@ -20,7 +20,8 @@ def train_epoch(epoch,
                 batch_logger,
                 tb_writer=None,
                 distributed=False,
-                use_mlflow=False):
+                use_mlflow=False,
+                precision_recall_fscore=False):
     print('train at epoch {}'.format(epoch))
 
     model.train()
@@ -30,6 +31,8 @@ def train_epoch(epoch,
     losses = AverageMeter()
     accuracies = AverageMeter()
 
+    all_targets = []
+    all_outputs = []
     end_time = time.time()
     for i, (inputs, targets) in enumerate(data_loader):
         data_time.update(time.time() - end_time)
@@ -49,6 +52,10 @@ def train_epoch(epoch,
         batch_time.update(time.time() - end_time)
         end_time = time.time()
 
+        if precision_recall_fscore:
+            all_targets.append(targets)
+            all_outputs.append(outputs)
+
         if batch_logger is not None:
             batch_logger.log({
                 'epoch': epoch,
@@ -63,13 +70,20 @@ def train_epoch(epoch,
               'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
               'Data {data_time.val:.3f} ({data_time.avg:.3f})\t'
               'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
-              'Acc {acc.val:.3f} ({acc.avg:.3f})'.format(epoch,
-                                                         i + 1,
-                                                         len(data_loader),
-                                                         batch_time=batch_time,
-                                                         data_time=data_time,
-                                                         loss=losses,
-                                                         acc=accuracies))
+              'Acc {acc.val:.3f} ({acc.avg:.3f})'.\
+              format(epoch,
+                     i + 1,
+                     len(data_loader),
+                     batch_time=batch_time,
+                     data_time=data_time,
+                     loss=losses,
+                     acc=accuracies))
+
+    if precision_recall_fscore:
+        precision, recall, fscore = \
+            calculate_precision_recall_fscore(torch.cat(all_outputs, dim=0),
+                                              torch.cat(all_targets, dim=0),
+                                              pos_label=1)
 
     if distributed:
         loss_sum = torch.tensor([losses.sum],
@@ -94,21 +108,37 @@ def train_epoch(epoch,
         accuracies.avg = acc_sum.item() / acc_count.item()
 
     if epoch_logger is not None:
-        epoch_logger.log({
+        log_data = {
             'epoch': epoch,
             'loss': losses.avg,
             'acc': accuracies.avg,
             'lr': current_lr
-        })
+        }
+        if precision_recall_fscore:
+            log_data["precision"] = precision
+            log_data["recall"] = recall
+            log_data["fscore"] = fscore
+
+        epoch_logger.log(log_data)
 
     if tb_writer is not None:
         tb_writer.add_scalar('train/loss', losses.avg, epoch)
         tb_writer.add_scalar('train/acc', accuracies.avg, epoch)
         tb_writer.add_scalar('train/lr', current_lr, epoch)
+        if precision_recall_fscore:
+            tb_writer.add_scalar('train/precision', precision, epoch)
+            tb_writer.add_scalar('train/recall', recall, epoch)
+            tb_writer.add_scalar('train/fscore', fscore, epoch)
 
     if use_mlflow:
-        mlflow.log_metrics({
+        metrics = {
             'loss': losses.avg,
             'acc': accuracies.avg,
             'lr': current_lr
-        }, step=epoch)
+        }
+        if precision_recall_fscore:
+            metrics["train/precision"] = precision
+            metrics["train/recall"] = recall
+            metrics["train/fscore"] = fscore
+
+        mlflow.log_metrics(metrics=metrics, step=epoch)

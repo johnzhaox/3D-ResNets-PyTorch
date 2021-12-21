@@ -321,6 +321,11 @@ def parse_opts():
     parser.add_argument('--train_ts_channel_shuffle',
                         action="store_true",
                         help='If true, channel random shuffle if performed.')
+    parser.add_argument(
+        '--precision_recall_fscore',
+        action="store_true",
+        help='If true, precision, recall and fscore will be logged by '
+             'tensorboard and mlflow.')
 
     args = parser.parse_args()
 

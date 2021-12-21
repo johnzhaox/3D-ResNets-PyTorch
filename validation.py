@@ -5,7 +5,8 @@ import mlflow
 import torch
 import torch.distributed as dist
 
-from utils import AverageMeter, calculate_accuracy
+from utils import AverageMeter, calculate_accuracy, \
+    calculate_precision_recall_fscore
 
 
 def val_epoch(epoch,
@@ -16,7 +17,8 @@ def val_epoch(epoch,
               logger,
               tb_writer=None,
               distributed=False,
-              use_mlflow=False):
+              use_mlflow=False,
+              precision_recall_fscore=False):
     print('validation at epoch {}'.format(epoch))
 
     model.eval()
@@ -29,6 +31,8 @@ def val_epoch(epoch,
     end_time = time.time()
 
     with torch.no_grad():
+        all_targets = []
+        all_outputs = []
         for i, (inputs, targets) in enumerate(data_loader):
             data_time.update(time.time() - end_time)
 
@@ -43,18 +47,23 @@ def val_epoch(epoch,
             batch_time.update(time.time() - end_time)
             end_time = time.time()
 
+            if precision_recall_fscore:
+                all_targets.append(targets)
+                all_outputs.append(outputs)
+
             print('Epoch: [{0}][{1}/{2}]\t'
                   'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
                   'Data {data_time.val:.3f} ({data_time.avg:.3f})\t'
                   'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
-                  'Acc {acc.val:.3f} ({acc.avg:.3f})'.format(
-                      epoch,
-                      i + 1,
-                      len(data_loader),
-                      batch_time=batch_time,
-                      data_time=data_time,
-                      loss=losses,
-                      acc=accuracies))
+                  'Acc {acc.val:.3f} ({acc.avg:.3f})'.\
+                format(epoch,
+                       i + 1,
+                       len(data_loader),
+                       batch_time=batch_time,
+                       data_time=data_time,
+                       loss=losses,
+                       acc=accuracies)
+                  )
 
     if distributed:
         loss_sum = torch.tensor([losses.sum],
@@ -78,15 +87,34 @@ def val_epoch(epoch,
         losses.avg = loss_sum.item() / loss_count.item()
         accuracies.avg = acc_sum.item() / acc_count.item()
 
+    if precision_recall_fscore:
+        precision, recall, fscore = calculate_precision_recall_fscore(
+            torch.cat(all_outputs, dim=0),
+            torch.cat(all_targets, dim=0),
+            pos_label=1)
+
     if logger is not None:
-        logger.log({'epoch': epoch, 'loss': losses.avg, 'acc': accuracies.avg})
+        log_data = {'epoch': epoch, 'loss': losses.avg, 'acc': accuracies.avg}
+        if precision_recall_fscore:
+            log_data["precision"] = precision
+            log_data["recall"] = recall
+            log_data["fscore"] = fscore
+        logger.log(log_data)
 
     if tb_writer is not None:
         tb_writer.add_scalar('val/loss', losses.avg, epoch)
         tb_writer.add_scalar('val/acc', accuracies.avg, epoch)
+        if precision_recall_fscore:
+            tb_writer.add_scalar('val/precision', precision, epoch)
+            tb_writer.add_scalar('val/recall', recall, epoch)
+            tb_writer.add_scalar('val/fscore', fscore, epoch)
 
     if use_mlflow:
-        mlflow.log_metrics({"val/loss": losses.avg, "val/acc": accuracies.avg},
-                           step=epoch)
+        metrics = {"val/loss": losses.avg, "val/acc": accuracies.avg}
+        if precision_recall_fscore:
+            metrics["val/precision"] = precision
+            metrics["val/recall"] = recall
+            metrics["val/fscore"] = fscore
+        mlflow.log_metrics(metrics=metrics, step=epoch)
 
     return losses.avg

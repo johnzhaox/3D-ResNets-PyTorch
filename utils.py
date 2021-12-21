@@ -70,6 +70,16 @@ def calculate_precision_and_recall(outputs, targets, pos_label=1):
         return precision[pos_label], recall[pos_label]
 
 
+def calculate_precision_recall_fscore(outputs, targets, pos_label=1):
+    with torch.no_grad():
+        _, pred = outputs.topk(1, 1, largest=True, sorted=True)
+        precision, recall, fscore, _ = precision_recall_fscore_support(
+            targets.view(-1, 1).cpu().numpy(),
+            pred.cpu().numpy())
+
+        return precision[pos_label], recall[pos_label], fscore[pos_label]
+
+
 def worker_init_fn(worker_id):
     torch_seed = torch.initial_seed()
 
