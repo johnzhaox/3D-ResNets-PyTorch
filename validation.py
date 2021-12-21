@@ -6,7 +6,7 @@ import torch
 import torch.distributed as dist
 
 from utils import AverageMeter, calculate_accuracy, \
-    calculate_precision_recall_fscore
+    calculate_precision_recall_fscore, calculate_auc
 
 
 def val_epoch(epoch,
@@ -18,7 +18,8 @@ def val_epoch(epoch,
               tb_writer=None,
               distributed=False,
               use_mlflow=False,
-              precision_recall_fscore=False):
+              precision_recall_fscore=False,
+              auc=False):
     print('validation at epoch {}'.format(epoch))
 
     model.eval()
@@ -93,12 +94,19 @@ def val_epoch(epoch,
             torch.cat(all_targets, dim=0),
             pos_label=1)
 
+    if auc:
+        auc_val = calculate_auc(torch.cat(all_outputs, dim=0),
+                                torch.cat(all_targets, dim=0),
+                                pos_label=1)
+
     if logger is not None:
         log_data = {'epoch': epoch, 'loss': losses.avg, 'acc': accuracies.avg}
         if precision_recall_fscore:
             log_data["precision"] = precision
             log_data["recall"] = recall
             log_data["fscore"] = fscore
+        if auc:
+            log_data["auc"] = auc_val
         logger.log(log_data)
 
     if tb_writer is not None:
@@ -108,6 +116,8 @@ def val_epoch(epoch,
             tb_writer.add_scalar('val/precision', precision, epoch)
             tb_writer.add_scalar('val/recall', recall, epoch)
             tb_writer.add_scalar('val/fscore', fscore, epoch)
+        if auc:
+            tb_writer.add_scalar('val/auc', auc_val, epoch)
 
     if use_mlflow:
         metrics = {"val/loss": losses.avg, "val/acc": accuracies.avg}
@@ -115,6 +125,8 @@ def val_epoch(epoch,
             metrics["val/precision"] = precision
             metrics["val/recall"] = recall
             metrics["val/fscore"] = fscore
+        if auc:
+            metrics["val/auc"] = auc_val
         mlflow.log_metrics(metrics=metrics, step=epoch)
 
     return losses.avg

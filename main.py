@@ -400,7 +400,7 @@ def main_worker(index, opt):
             train_epoch(i, train_loader, model, criterion, optimizer,
                         opt.device, current_lr, train_logger,
                         train_batch_logger, tb_writer, opt.distributed,
-                        opt.mlflow, opt.precision_recall_fscore)
+                        opt.mlflow, opt.precision_recall_fscore, opt.auc)
 
             if i % opt.checkpoint == 0 and opt.is_master_node:
                 save_file_path = opt.result_path / 'save_{}.pth'.format(i)
@@ -411,7 +411,7 @@ def main_worker(index, opt):
             prev_val_loss = val_epoch(i, val_loader, model, criterion,
                                       opt.device, val_logger, tb_writer,
                                       opt.distributed, opt.mlflow,
-                                      opt.precision_recall_fscore)
+                                      opt.precision_recall_fscore, opt.auc)
 
         if not opt.no_train and opt.lr_scheduler == 'multistep':
             scheduler.step()

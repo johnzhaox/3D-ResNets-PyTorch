@@ -6,7 +6,7 @@ import torch
 import torch.distributed as dist
 
 from utils import AverageMeter, calculate_accuracy, \
-    calculate_precision_recall_fscore
+    calculate_precision_recall_fscore, calculate_auc
 
 
 def train_epoch(epoch,
@@ -21,7 +21,8 @@ def train_epoch(epoch,
                 tb_writer=None,
                 distributed=False,
                 use_mlflow=False,
-                precision_recall_fscore=False):
+                precision_recall_fscore=False,
+                auc=False):
     print('train at epoch {}'.format(epoch))
 
     model.train()
@@ -85,6 +86,11 @@ def train_epoch(epoch,
                                               torch.cat(all_targets, dim=0),
                                               pos_label=1)
 
+    if auc:
+        auc_val = calculate_auc(torch.cat(all_outputs, dim=0),
+                                torch.cat(all_targets, dim=0),
+                                pos_label=1)
+
     if distributed:
         loss_sum = torch.tensor([losses.sum],
                                 dtype=torch.float32,
@@ -118,6 +124,8 @@ def train_epoch(epoch,
             log_data["precision"] = precision
             log_data["recall"] = recall
             log_data["fscore"] = fscore
+        if auc:
+            log_data["auc"] = auc_val
 
         epoch_logger.log(log_data)
 
@@ -129,6 +137,8 @@ def train_epoch(epoch,
             tb_writer.add_scalar('train/precision', precision, epoch)
             tb_writer.add_scalar('train/recall', recall, epoch)
             tb_writer.add_scalar('train/fscore', fscore, epoch)
+        if auc:
+            tb_writer.add_scalar('train/auc', auc_val, epoch)
 
     if use_mlflow:
         metrics = {
@@ -140,5 +150,7 @@ def train_epoch(epoch,
             metrics["train/precision"] = precision
             metrics["train/recall"] = recall
             metrics["train/fscore"] = fscore
+        if auc:
+            metrics["train/auc"] = auc_val
 
         mlflow.log_metrics(metrics=metrics, step=epoch)

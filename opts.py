@@ -326,6 +326,10 @@ def parse_opts():
         action="store_true",
         help='If true, precision, recall and fscore will be logged by '
              'tensorboard and mlflow.')
+    parser.add_argument(
+        '--auc',
+        action="store_true",
+        help='If true, auc be logged by tensorboard and mlflow.')
 
     args = parser.parse_args()
 

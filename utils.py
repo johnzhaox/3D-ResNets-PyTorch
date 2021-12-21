@@ -4,7 +4,7 @@ from functools import partialmethod
 
 import torch
 import numpy as np
-from sklearn.metrics import precision_recall_fscore_support
+from sklearn.metrics import precision_recall_fscore_support, roc_curve, auc
 
 
 class AverageMeter(object):
@@ -78,6 +78,14 @@ def calculate_precision_recall_fscore(outputs, targets, pos_label=1):
             pred.cpu().numpy())
 
         return precision[pos_label], recall[pos_label], fscore[pos_label]
+
+
+def calculate_auc(outputs, targets, pos_label=1):
+    with torch.no_grad():
+        _, pred = outputs.topk(1, 1, largest=True, sorted=True)
+        fpr, tpr, _ = roc_curve(targets.view(-1, 1).cpu().numpy(),
+                                pred.cpu().numpy(), pos_label=pos_label)
+        return auc(fpr, tpr)
 
 
 def worker_init_fn(worker_id):
