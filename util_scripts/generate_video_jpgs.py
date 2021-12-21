@@ -27,7 +27,7 @@ def video_process(video_file_path, dst_root_path, ext, fps=-1, size=240):
 
     name = video_file_path.stem
     dst_dir_path = dst_root_path / name
-    dst_dir_path.mkdir(exist_ok=True)
+    dst_dir_path.mkdir(parents=True, exist_ok=True)
     n_exist_frames = len([
         x for x in dst_dir_path.iterdir()
         if x.suffix == '.jpg' and x.name[0] != '.'
@@ -59,7 +59,7 @@ def class_process(class_dir_path, dst_root_path, ext, fps=-1, size=240):
         return
 
     dst_class_path = dst_root_path / class_dir_path.name
-    dst_class_path.mkdir(exist_ok=True)
+    dst_class_path.mkdir(parents=True, exist_ok=True)
 
     for video_file_path in sorted(class_dir_path.iterdir()):
         video_process(video_file_path, dst_class_path, ext, fps, size)
@@ -70,7 +70,7 @@ def class_process_custom(class_dir_path, dst_root_path, ext, fps=-1, size=240):
         return
 
     dst_class_path = dst_root_path / class_dir_path.name
-    dst_class_path.mkdir(exist_ok=True)
+    dst_class_path.mkdir(parents=True, exist_ok=True)
 
     for video_file_path in class_dir_path.glob("*/*.avi"):
         video_process(video_file_path, dst_class_path, ext, fps, size)
@@ -104,7 +104,7 @@ if __name__ == '__main__':
 
     if args.dst_path.exists():
         os.system("rm -rf %s" % args.dst_path)
-    args.dst_path.mkdir(exist_ok=True)
+    args.dst_path.mkdir(parents=True, exist_ok=True)
 
     if args.dataset in ['kinetics', 'mit', 'activitynet']:
         ext = '.mp4'
@@ -124,7 +124,7 @@ if __name__ == '__main__':
         for class_dir_path in args.dir_path.iterdir():
             dst_class_path = args.dst_path / class_dir_path.name
             if not dst_class_path.exists():
-                dst_class_path.mkdir()
+                dst_class_path.mkdir(parents=True)
             tasks += [(dst_class_path, vid_path)
                       for vid_path in class_dir_path.glob("*/*.avi")]
 
