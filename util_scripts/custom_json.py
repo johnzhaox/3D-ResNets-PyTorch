@@ -87,7 +87,7 @@ if __name__ == '__main__':
 
     if args.dst_dir_path.exists():
         os.system("rm -rf %s" % args.dst_dir_path)
-    args.dst_dir_path.mkdir()
+    args.dst_dir_path.mkdir(parents=True)
 
     dst_json_path = args.dst_dir_path / 'custom.json'
     convert_custom_csv_to_json(args.dir_path, args.video_path, dst_json_path)
