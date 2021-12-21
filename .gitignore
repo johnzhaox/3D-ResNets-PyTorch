@@ -109,3 +109,6 @@ data/
 
 runs/
 mlruns
+
+generate_data_custom.sh
+train_custom.sh
