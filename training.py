@@ -142,8 +142,8 @@ def train_epoch(epoch,
 
     if use_mlflow:
         metrics = {
-            'loss': losses.avg,
-            'acc': accuracies.avg,
+            'train/loss': losses.avg,
+            'train/acc': accuracies.avg,
             'lr': current_lr
         }
         if precision_recall_fscore:
