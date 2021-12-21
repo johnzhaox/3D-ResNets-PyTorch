@@ -397,7 +397,7 @@ def main_worker(index, opt):
             train_epoch(i, train_loader, model, criterion, optimizer,
                         opt.device, current_lr, train_logger,
                         train_batch_logger, tb_writer, opt.distributed,
-                        opt.use_mlflow)
+                        opt.mlflow)
 
             if i % opt.checkpoint == 0 and opt.is_master_node:
                 save_file_path = opt.result_path / 'save_{}.pth'.format(i)
@@ -407,7 +407,7 @@ def main_worker(index, opt):
         if not opt.no_val:
             prev_val_loss = val_epoch(i, val_loader, model, criterion,
                                       opt.device, val_logger, tb_writer,
-                                      opt.distributed, opt.use_mlflow)
+                                      opt.distributed, opt.mlflow)
 
         if not opt.no_train and opt.lr_scheduler == 'multistep':
             scheduler.step()
@@ -427,7 +427,7 @@ def main_worker(index, opt):
 if __name__ == '__main__':
     opt = get_opt()
 
-    if opt.use_mlflow:
+    if opt.mlflow:
         mlflow.log_params(opt.__dict__)
 
     opt.device = torch.device('cpu' if opt.no_cuda else 'cuda')
