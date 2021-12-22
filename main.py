@@ -7,6 +7,7 @@ import numpy as np
 import torch
 import torch.utils.data
 from torch.nn import CrossEntropyLoss
+from loss import FocalLoss
 from torch.optim import SGD, lr_scheduler
 import torch.multiprocessing as mp
 import torch.distributed as dist
@@ -353,6 +354,7 @@ def main_worker(index, opt):
     if opt.batchnorm_sync:
         assert opt.distributed, 'SyncBatchNorm only supports DistributedDataParallel.'
         model = torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
+
     if opt.pretrain_path:
         model = load_pretrained_model(model, opt.pretrain_path, opt.model,
                                       opt.n_finetune_classes)
@@ -368,7 +370,15 @@ def main_worker(index, opt):
     if opt.is_master_node:
         print(model)
 
-    criterion = CrossEntropyLoss().to(opt.device)
+    class_weight = None if opt.class_weight is None else \
+        torch.tensor(opt.class_weight, dtype=torch.float)
+    if opt.loss_function == "focal_loss":
+        criterion = FocalLoss(alpha=class_weight,
+                              gamma=opt.focal_gamma,
+                              reduction=opt.loss_reduction).to(opt.device)
+    else:
+        criterion = CrossEntropyLoss(weight=class_weight,
+                                     reduction=opt.loss_reduction).to(opt.device)
 
     if not opt.no_train:
         (train_loader, train_sampler, train_logger, train_batch_logger,
@@ -378,6 +388,7 @@ def main_worker(index, opt):
                 opt.resume_path, opt.begin_epoch, optimizer, scheduler)
             if opt.overwrite_milestones:
                 scheduler.milestones = opt.multistep_milestones
+
     if not opt.no_val:
         val_loader, val_logger = get_val_utils(opt)
 

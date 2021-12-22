@@ -330,6 +330,27 @@ def parse_opts():
         '--auc',
         action="store_true",
         help='If true, auc be logged by tensorboard and mlflow.')
+    parser.add_argument('--loss_function',
+                        default='cross_entropy',
+                        type=str,
+                        help='Loss function to use, support cross_entropy '
+                             'and focal_loss, default cross_entropy')
+    parser.add_argument('--loss_reduction',
+                        default='mean',
+                        type=str,
+                        help='Reduction to apply to the output, mean or sum')
+    parser.add_argument(
+        '--class_weight',
+        default=None,
+        type=float,
+        nargs='+',
+        help='A manual rescaling weight given to each class.')
+    parser.add_argument(
+        '--focal_gamma',
+        default=2,
+        type=float,
+        help='Gamma for focal loss.'
+    )
 
     args = parser.parse_args()
 
