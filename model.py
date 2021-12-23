@@ -31,6 +31,9 @@ def get_fine_tuning_parameters(model, ft_begin_module):
             v.requires_grad_(True)
             parameters.append({'params': v})
 
+        print("k = ", k)
+        print("v.requires_grad = ", v.requires_grad)
+
     return parameters
 
 
@@ -102,7 +105,8 @@ def load_pretrained_model(model, pretrain_path, model_name, n_finetune_classes):
         pretrain = torch.load(pretrain_path, map_location='cpu')
         state_dict = OrderedDict()
         for k, v in pretrain["state_dict"].items():
-            state_dict[k[7:]] = v
+            k = k[7:] if k.startswith("module.") else k
+            state_dict[k] = v
 
         # model.load_state_dict(pretrain['state_dict'])
         model.load_state_dict(state_dict, False)
