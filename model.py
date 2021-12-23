@@ -31,9 +31,6 @@ def get_fine_tuning_parameters(model, ft_begin_module):
             v.requires_grad_(True)
             parameters.append({'params': v})
 
-        print("k = ", k)
-        print("v.requires_grad = ", v.requires_grad)
-
     return parameters
 
 
