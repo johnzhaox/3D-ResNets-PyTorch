@@ -122,6 +122,8 @@ if __name__ == '__main__':
     elif args.dataset == "custom":
         tasks = []
         for class_dir_path in args.dir_path.iterdir():
+            if not class_dir_path.is_dir():
+                continue
             dst_class_path = args.dst_path / class_dir_path.name
             if not dst_class_path.exists():
                 dst_class_path.mkdir(parents=True)
