@@ -147,7 +147,9 @@ def parse_opts():
     parser.add_argument('--optimizer',
                         default='sgd',
                         type=str,
-                        help='Currently only support SGD')
+                        help='Currently support SGD and Adam: '
+                             'sgd - AGD'
+                             'adam - Adam')
     parser.add_argument('--lr_scheduler',
                         default='multistep',
                         type=str,
