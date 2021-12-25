@@ -207,7 +207,7 @@ def get_train_utils(opt, model_parameters):
     else:
         dampening = opt.dampening
 
-    if opt.adam:
+    if opt.optimizer == "adam":
         optimizer = Adam(model_parameters,
                          lr=opt.learning_rate,
                          weight_decay=opt.weight_decay)
