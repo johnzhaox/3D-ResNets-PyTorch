@@ -449,6 +449,9 @@ if __name__ == '__main__':
     opt = get_opt()
 
     if opt.mlflow:
+        mlflow_name = opt.__dict__.pop("mlflow_run_name")
+        if mlflow_name:
+            mlflow.start_run(run_name=mlflow_name)
         mlflow.log_params(opt.__dict__)
 
     opt.device = torch.device('cpu' if opt.no_cuda else 'cuda')

@@ -303,6 +303,10 @@ def parse_opts():
     parser.add_argument('--mlflow',
                         action='store_true',
                         help='If true, output mlflow log file.')
+    parser.add_argument('--mlflow_run_name',
+                        default='',
+                        type=str,
+                        help='Name of mlflow run.')
     parser.add_argument('--tensorboard_log_dir',
                         default=None,
                         type=Path,
